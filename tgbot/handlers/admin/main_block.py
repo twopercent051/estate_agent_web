@@ -2,7 +2,7 @@ import asyncio
 from typing import List
 
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.filters import Command
 from aiogram import F, Router
 
@@ -11,6 +11,7 @@ from .filters import AdminFilter
 from .inline import InlineKeyboard
 from tgbot.misc.states import AdminFSM
 from ...models.sql_connector import FilesDAO, TextsDAO, UsersDAO
+from ...services.excel import ExcelFile
 
 router = Router()
 router.message.filter(AdminFilter())
@@ -19,6 +20,8 @@ router.callback_query.filter(AdminFilter())
 admin_group = config.tg_bot.admin_group
 
 inline = InlineKeyboard()
+
+excel_file = ExcelFile()
 
 
 async def start_render():
@@ -181,7 +184,44 @@ async def main_block(message: Message, state: FSMContext):
 
 @router.callback_query(F.data == "statistics")
 async def main_block(callback: CallbackQuery):
-    users = await UsersDAO.get_many()
+    users = await UsersDAO.get_order_by_count()
     text = f"Сейчас зарегистрировано {len(users)} пользователей"
     kb = inline.home_kb()
+    excel_file.create_users_file(users=users)
+    file_name = excel_file.users_path
+    file = FSInputFile(path=file_name, filename=file_name)
+    await callback.message.answer_document(document=file, caption=text, reply_markup=kb)
+    await bot.answer_callback_query(callback.id)
 
+
+@router.callback_query(F.data == "mailing")
+async def main_block(callback: CallbackQuery, state: FSMContext):
+    text = "Введите текст сообщения. Можно приложить 1 фото или 1 видео"
+    kb = inline.home_kb()
+    await state.set_state(AdminFSM.mailing)
+    await callback.message.answer(text, reply_markup=kb)
+    await bot.answer_callback_query(callback.id)
+
+
+@router.message(F.text, AdminFSM.mailing)
+@router.message(F.photo, AdminFSM.mailing)
+@router.message(F.video, AdminFSM.mailing)
+async def main_block(message: Message, state: FSMContext):
+    users = await UsersDAO.get_many()
+    count = 0
+    for user in users:
+        user_id = user["user_id"]
+        try:
+            if message.content_type == "text":
+                await bot.send_message(chat_id=user_id, text=message.html_text)
+            if message.content_type == "photo":
+                await bot.send_photo(chat_id=user_id, photo=message.photo[-1].file_id, caption=message.caption)
+            if message.content_type == "video":
+                await bot.send_video(chat_id=user_id, video=message.video.file_id, caption=message.caption)
+            count += 1
+        except:
+            pass
+    text = f"Сообщение доставлено {count} / {len(users)} пользователей"
+    kb = inline.home_kb()
+    await state.set_state(AdminFSM.home)
+    await message.answer(text, reply_markup=kb)

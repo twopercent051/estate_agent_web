@@ -1,8 +1,10 @@
 from typing import List
 
-from sqlalchemy import MetaData, Column, Integer, String, select, insert, delete, TEXT, update
+from sqlalchemy import MetaData, Column, Integer, String, select, insert, delete, TEXT, update, DateTime
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm import sessionmaker, as_declarative
+from sqlalchemy.sql import expression
 
 from create_bot import DATABASE_URL
 
@@ -14,6 +16,16 @@ async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit
 @as_declarative()
 class Base:
     metadata = MetaData()
+
+
+class UtcNow(expression.FunctionElement):
+    type = DateTime()
+    inherit_cache = True
+
+
+@compiles(UtcNow, 'postgresql')
+def pg_utcnow(element, compiler, **kw):
+    return "TIMEZONE('utc', CURRENT_TIMESTAMP)"
 
 
 class FilesDB(Base):
@@ -30,6 +42,7 @@ class UsersDB(Base):
     id = Column(Integer, nullable=False, autoincrement=True, primary_key=True)
     user_id = Column(String, nullable=False, unique=True)
     username = Column(String, nullable=False)
+    create_dtime = Column(DateTime, nullable=False, server_default=UtcNow())
     request_count = Column(Integer, nullable=False, server_default="0")
 
 
@@ -87,7 +100,7 @@ class FilesDAO(BaseDAO):
     @classmethod
     async def get_many_by_keyword(cls, keyword: str) -> list:
         async with async_session_maker() as session:
-            query = select(cls.model.__table__.columns).filter(cls.model.file_name.like(f"%{keyword}%")).\
+            query = select(cls.model.__table__.columns).filter(cls.model.file_name.like(f"%{keyword}%")). \
                 order_by(cls.model.id.asc())
             result = await session.execute(query)
             return result.mappings().all()
@@ -122,3 +135,9 @@ class UsersDAO(BaseDAO):
             await session.execute(stmt)
             await session.commit()
 
+    @classmethod
+    async def get_order_by_count(cls) -> list:
+        async with async_session_maker() as session:
+            query = select(cls.model.__table__.columns).order_by(cls.model.request_count.desc())
+            result = await session.execute(query)
+            return result.mappings().all()

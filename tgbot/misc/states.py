@@ -7,6 +7,7 @@ class AdminFSM(StatesGroup):
     search_files = State()
     support = State()
     edit_text = State()
+    mailing = State()
 
 
 class UserFSM(StatesGroup):

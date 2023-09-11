@@ -2,15 +2,13 @@ from datetime import datetime
 from typing import Optional, List
 
 from openpyxl import Workbook
-from openpyxl.reader.excel import load_workbook
 from openpyxl.styles import Font
 import os
 
 
 class ExcelFile:
     def __init__(self):
-        self.price_path = f"{os.getcwd()}/price_list.xlsx"
-        self.shipments_path = f"{os.getcwd()}/shipments_list.xlsx"
+        self.users_path = f"{os.getcwd()}/users_list.xlsx"
 
     @staticmethod
     def __reformat_date(date: Optional[datetime]) -> str:
@@ -24,6 +22,7 @@ class ExcelFile:
             (
                 "User ID",
                 "Username",
+                "Дата регистрации (utc)"
                 "Количество запросов"
             )
         )
@@ -37,7 +36,8 @@ class ExcelFile:
                 (
                     user["user_id"],
                     user["username"],
-                    user["user_id"],
+                    user["create_dtime"],
+                    user["request_count"],
                 )
             )
-        wb.save(self.shipments_path)
+        wb.save(self.users_path)

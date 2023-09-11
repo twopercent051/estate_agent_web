@@ -17,6 +17,7 @@ class InlineKeyboard:
             [InlineKeyboardButton(text="🔎 Поиск файлов", callback_data="search_files")],
             [InlineKeyboardButton(text="📝 Редактура текстов", callback_data="edit_texts")],
             [InlineKeyboardButton(text="📈 Статистика", callback_data="statistics")],
+            [InlineKeyboardButton(text="✉️ Рассылка", callback_data="mailing")],
         ]
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
