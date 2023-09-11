@@ -10,7 +10,7 @@ from tgbot.models.sql_connector import TextsDAO
 inline = InlineKeyboard()
 
 
-class BlockUserMiddleware(BaseMiddleware):
+class NotInChannelMiddleware(BaseMiddleware):
 
     async def __call__(self,
                        handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]],

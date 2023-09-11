@@ -10,8 +10,11 @@ from create_bot import bot, config
 from tgbot.misc.states import UserFSM
 from tgbot.models.sql_connector import FilesDAO, TextsDAO, UsersDAO
 from .inline import InlineKeyboard
+from .middlewares import NotInChannelMiddleware
 
 router = Router()
+router.message.outer_middleware(NotInChannelMiddleware())
+router.callback_query.outer_middleware(NotInChannelMiddleware())
 
 inline = InlineKeyboard()
 
