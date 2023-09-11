@@ -36,7 +36,7 @@ class ExcelFile:
                 (
                     user["user_id"],
                     user["username"],
-                    user["create_dtime"],
+                    self.__reformat_date(user["create_dtime"]),
                     user["request_count"],
                 )
             )
