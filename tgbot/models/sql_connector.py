@@ -113,7 +113,7 @@ class TextsDAO(BaseDAO):
     async def get_text(cls, chapter: str):
         text = await cls.get_one_or_none(chapter=chapter)
         if text:
-            return text["chapter"]
+            return text["text"]
         else:
             return "ТЕКСТ НЕ ЗАДАН"
 
