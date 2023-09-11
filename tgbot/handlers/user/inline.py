@@ -19,3 +19,11 @@ class InlineKeyboard:
     def answer_kb(user_id: str | int):
         keyboard = [[InlineKeyboardButton(text="📞 Ответить", callback_data=f"support:{user_id}")]]
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+    @staticmethod
+    def chat_following_kb():
+        keyboard = [[
+            InlineKeyboardButton(text="Subscribe to the channel", url="https://t.me/artashesgri"),
+            InlineKeyboardButton(text="I signed up", callback_data="check"),
+        ]]
+        return InlineKeyboardMarkup(inline_keyboard=keyboard)

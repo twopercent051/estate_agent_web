@@ -1,3 +1,4 @@
+import asyncio
 from typing import List
 
 from aiogram.fsm.context import FSMContext
@@ -9,7 +10,7 @@ from create_bot import bot, config
 from .filters import AdminFilter
 from .inline import InlineKeyboard
 from tgbot.misc.states import AdminFSM
-from ...models.sql_connector import FilesDAO
+from ...models.sql_connector import FilesDAO, TextsDAO, UsersDAO
 
 router = Router()
 router.message.filter(AdminFilter())
@@ -52,7 +53,6 @@ async def main_block(callback: CallbackQuery, state: FSMContext):
 async def main_block(message: Message, album: List[Message] = None):
     files_list = []
     if album:
-        print(album)
         for file in album:
             file_data = dict(file_name=file.document.file_name.replace("_", " ").lower(),
                              file_id=file.document.file_id)
@@ -122,7 +122,8 @@ async def main_block(callback: CallbackQuery, state: FSMContext):
 async def main_block(message: Message, state: FSMContext):
     state_data = await state.get_data()
     user_id = state_data["user_id"]
-    text = f"⚠️ Message from support:\n\n{message.text}"
+    text = await TextsDAO.get_text(chapter="message_from_support")
+    text = f"{text}\n\n{message.text}"
     kb = inline.answer_kb()
     if message.content_type == "text":
         await bot.send_message(chat_id=user_id, text=text, reply_markup=kb)
@@ -136,3 +137,51 @@ async def main_block(message: Message, state: FSMContext):
     kb = inline.home_kb()
     await state.set_state(AdminFSM.home)
     await message.answer(text, reply_markup=kb)
+
+
+@router.callback_query(F.data == "edit_texts")
+async def main_block(callback: CallbackQuery):
+    text = "Выберите что редактируем"
+    kb = inline.edit_texts_kb()
+    await callback.message.answer(text, reply_markup=kb)
+    await bot.answer_callback_query(callback.id)
+
+
+@router.callback_query(F.data.split(":")[0] == "edit_text")
+async def main_block(callback: CallbackQuery, state: FSMContext):
+    chapter = callback.data.split(":")[1]
+    text = await TextsDAO.get_text(chapter=chapter)
+    await callback.message.answer(text)
+    is_text = True
+    if text == "ТЕКСТ НЕ ЗАДАН":
+        is_text = False
+    await asyncio.sleep(1)
+    text = "Сейчас текст такой 👆. Введите новый или вернитесь в главное меню"
+    kb = inline.home_kb()
+    await state.set_state(AdminFSM.edit_text)
+    await state.update_data(chapter=chapter, is_text=is_text)
+    await callback.message.answer(text, reply_markup=kb)
+    await bot.answer_callback_query(callback.id)
+
+
+@router.message(F.text, AdminFSM.edit_text)
+async def main_block(message: Message, state: FSMContext):
+    state_data = await state.get_data()
+    chapter = state_data["chapter"]
+    is_text = state_data["is_text"]
+    if is_text:
+        await TextsDAO.update_by_chapter(chapter=chapter, text=message.html_text)
+    else:
+        await TextsDAO.create(chapter=chapter, text=message.html_text)
+    text = "👍 Обновили"
+    kb = inline.main_menu_kb()
+    await state.set_state(AdminFSM.home)
+    await message.answer(text, reply_markup=kb)
+
+
+@router.callback_query(F.data == "statistics")
+async def main_block(callback: CallbackQuery):
+    users = await UsersDAO.get_many()
+    text = f"Сейчас зарегистрировано {len(users)} пользователей"
+    kb = inline.home_kb()
+
