@@ -7,7 +7,7 @@ from aiogram.types import Message
 class AlbumMiddleware(BaseMiddleware):
     album_data: dict = {}
 
-    def __init__(self, latency: Union[int, float] = 0.01):
+    def __init__(self, latency: Union[int, float] = 4):
         self.latency = latency
 
     async def __call__(

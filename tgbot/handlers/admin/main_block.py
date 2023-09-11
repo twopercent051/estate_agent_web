@@ -52,6 +52,7 @@ async def main_block(callback: CallbackQuery, state: FSMContext):
 async def main_block(message: Message, album: List[Message] = None):
     files_list = []
     if album:
+        print(album)
         for file in album:
             file_data = dict(file_name=file.document.file_name.replace("_", " ").lower(),
                              file_id=file.document.file_id)
@@ -59,7 +60,7 @@ async def main_block(message: Message, album: List[Message] = None):
     else:
         file_data = dict(file_name=message.document.file_name.replace("_", " ").lower(),
                          file_id=message.document.file_id)
-        files_list =[file_data]
+        files_list = [file_data]
     await FilesDAO.create_many(files=files_list)
     text = f"Добавлено {len(files_list)} файлов"
     kb = inline.home_kb()
