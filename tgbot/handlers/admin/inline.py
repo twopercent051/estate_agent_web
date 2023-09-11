@@ -44,5 +44,5 @@ class InlineKeyboard:
         keyboard = []
         for button in kb_dict:
             keyboard.append([InlineKeyboardButton(text=kb_dict[button], callback_data=f"edit_text:{button}")])
-        keyboard.append(self._home_button)
+        keyboard.append([self._home_button])
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
