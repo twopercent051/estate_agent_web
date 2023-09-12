@@ -55,7 +55,7 @@ async def main_block(message: Message):
         await message.answer(text, reply_markup=kb)
         username = f"@{message.from_user.username}" if message.from_user.username else "---"
         admin_text = f"⚠️ Пользователь {username} по запросу {keyword} не смог найти материал"
-        await bot.send_message(chat_id=admin_group, text=text)
+        await bot.send_message(chat_id=admin_group, text=admin_text)
     elif len(files) == 1:
         await message.answer_document(document=files[0]["file_id"], reply_markup=kb)
     else:
