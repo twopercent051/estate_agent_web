@@ -14,8 +14,8 @@ from .inline import InlineKeyboard
 from .middlewares import NotInChannelMiddleware
 
 router = Router()
-router.message.outer_middleware(NotInChannelMiddleware())
-router.callback_query.outer_middleware(NotInChannelMiddleware())
+# router.message.outer_middleware(NotInChannelMiddleware())
+# router.callback_query.outer_middleware(NotInChannelMiddleware())
 
 inline = InlineKeyboard()
 
@@ -66,6 +66,9 @@ async def main_block(message: Message):
             media_group = []
             for file in chunk:
                 media_group.append(dict(media=file["file_id"], type="document"))
+            if len(media_group) == 1:
+                await message.answer_document(document=media_group[0]["media"])
+            else:
                 await message.answer_media_group(media_group)
         text = await TextsDAO.get_text(chapter="found_materials")
         await message.answer(text, reply_markup=kb)
