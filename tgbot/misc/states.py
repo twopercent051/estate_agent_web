@@ -8,6 +8,7 @@ class AdminFSM(StatesGroup):
     support = State()
     edit_text = State()
     mailing = State()
+    edit_images = State()
 
 
 class UserFSM(StatesGroup):

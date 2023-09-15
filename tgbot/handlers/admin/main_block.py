@@ -1,4 +1,5 @@
 import asyncio
+import os
 from typing import List
 
 from aiogram.fsm.context import FSMContext
@@ -52,7 +53,7 @@ async def main_block(callback: CallbackQuery, state: FSMContext):
     await bot.answer_callback_query(callback.id)
 
 
-@router.message(F.document)
+@router.message(F.document, AdminFSM.get_files)
 async def main_block(message: Message, album: List[Message] = None):
     files_list = []
     if album:
@@ -219,9 +220,36 @@ async def main_block(message: Message, state: FSMContext):
             if message.content_type == "video":
                 await bot.send_video(chat_id=user_id, video=message.video.file_id, caption=message.caption)
             count += 1
-        except:
-            pass
+        except Exception as ex:
+            print(ex)
     text = f"Сообщение доставлено {count} / {len(users)} пользователей"
+    kb = inline.home_kb()
+    await state.set_state(AdminFSM.home)
+    await message.answer(text, reply_markup=kb)
+
+
+@router.callback_query(F.data == "edit_images")
+async def main_block(callback: CallbackQuery, state: FSMContext):
+    files = await FilesDAO.get_many()
+    file_name = excel_file.files_path
+    excel_file.create_images_file(files=files)
+    file = FSInputFile(path=file_name, filename=file_name)
+    text = "Для редактирования загрузите обновлённый реестр. Чтобы убрать файл из выдачи оставьте поле File_name пустым"
+    kb = inline.home_kb()
+    await state.set_state(AdminFSM.edit_images)
+    await callback.message.answer_document(document=file, caption=text, reply_markup=kb)
+    os.remove(path=excel_file.files_path)
+    await bot.answer_callback_query(callback.id)
+
+
+@router.message(F.document, AdminFSM.edit_images)
+async def main_block(message: Message, state: FSMContext):
+    file_name = excel_file.files_path
+    await bot.download(file=message.document, destination=file_name)
+    file_data = excel_file.read_images_file()
+    rows_count = await FilesDAO.update_many(files=file_data)
+    os.remove(path=file_name)
+    text = f"Изменено {rows_count} строк"
     kb = inline.home_kb()
     await state.set_state(AdminFSM.home)
     await message.answer(text, reply_markup=kb)

@@ -105,6 +105,23 @@ class FilesDAO(BaseDAO):
             result = await session.execute(query)
             return result.mappings().all()
 
+    @classmethod
+    async def update_many(cls, files: List[dict]) -> int:
+        all_files = await cls.get_many()
+        result_files = []
+        for sql_file in all_files:
+            for data_file in files:
+                if sql_file["file_id"] == data_file["file_id"]:
+                    if sql_file["file_name"] != data_file["file_name"]:
+                        result_files.append(data_file)
+                        print(data_file)
+        for file in result_files:
+            async with async_session_maker() as session:
+                stmt = update(cls.model).values(file_name=file["file_name"]).filter_by(file_id=file["file_id"])
+                await session.execute(stmt)
+                await session.commit()
+        return len(result_files)
+
 
 class TextsDAO(BaseDAO):
     model = TextsDB
