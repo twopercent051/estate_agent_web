@@ -13,4 +13,8 @@ class AdminFSM(StatesGroup):
 
 class UserFSM(StatesGroup):
     home = State()
+    search_brochure = State()
     support = State()
+    net_to_seller = State()
+    payment_date = State()
+    payment_value = State()

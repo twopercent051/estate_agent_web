@@ -35,12 +35,20 @@ class InlineKeyboard:
     def edit_texts_kb(self):
         kb_dict = dict(
             subscribe_channel="Подпишитесь на канал",
-            greeting="Приветствие",
+            main_menu="Главное меню",
+            greeting_select_brochure="Приветствие поиска брошюры",
             nothing_found="Ничего не найдено",
             found_materials="Найдены брошюры",
             write_request="Напишите свой вопрос",
             message_sent="Сообщение отправлено",
             message_from_support="Сообщение от поддержки",
+            net_to_seller="Net to seller",
+            enter_date="Введите дату",
+            enter_payment="Введите платёж",
+            not_integer="Ввели не число",
+            there_are_payments="Есть ли платежи?",
+            continue_payments="Продолжить ввод платежей?",
+            calculation_result="Результат расчёта",
         )
         keyboard = []
         for button in kb_dict:

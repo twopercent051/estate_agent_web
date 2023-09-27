@@ -4,10 +4,10 @@ from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery
 
 from create_bot import bot, config
-from tgbot.handlers.user.inline import InlineKeyboard
+from tgbot.handlers.user.inline import CheckChannelInline
 from tgbot.models.sql_connector import TextsDAO
 
-inline = InlineKeyboard()
+inline = CheckChannelInline()
 
 
 class NotInChannelMiddleware(BaseMiddleware):
