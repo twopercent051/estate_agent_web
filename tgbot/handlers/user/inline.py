@@ -13,8 +13,8 @@ class MainInline:
     @staticmethod
     def main_menu_kb():
         keyboard = [
-            [InlineKeyboardButton(text="📖 Selection of the brochure", callback_data="select_brochure")],
-            [InlineKeyboardButton(text="💰 Price calculation", callback_data="price_calculation")]
+            [InlineKeyboardButton(text="🔎 Search for brochure", callback_data="select_brochure")],
+            [InlineKeyboardButton(text="💰 Generate sales offer", callback_data="price_calculation")]
         ]
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
@@ -46,7 +46,7 @@ class CalculationPriceInline(MainInline):
 
     def break_payments_kb(self):
         keyboard = [
-            [InlineKeyboardButton(text="Break payments", callback_data="payments_no")],
+            [InlineKeyboardButton(text="No more payments", callback_data="payments_no")],
             [self._home_button]
         ]
         return InlineKeyboardMarkup(inline_keyboard=keyboard)

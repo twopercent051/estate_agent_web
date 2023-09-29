@@ -70,7 +70,7 @@ async def price_calculation_block(message: Message, state: FSMContext):
         payments: list = state_data["payments"]
         payment_data = dict(payment_date=payment_date, payment_value=value)
         payments.append(payment_data)
-        await state.update_data(net_to_seller=value, payments=payments)
+        await state.update_data(payments=payments)
         await state.set_state(UserFSM.payment_date)
     except ValueError:
         text = await TextsDAO.get_text(chapter="not_integer")
