@@ -84,8 +84,6 @@ async def price_calculation_block(callback: CallbackQuery, state: FSMContext):
     kb = inline.home_kb()
     state_data = await state.get_data()
     file_name = excel_file.calculation_path
-    print(state_data["net_to_seller"])
-    print(state_data["payments"])
     excel_file.create_calculation_file(net_to_seller=state_data["net_to_seller"], payments=state_data["payments"])
     file = FSInputFile(path=file_name, filename=file_name)
     await state.set_state(UserFSM.home)

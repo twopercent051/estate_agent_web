@@ -13,8 +13,8 @@ class MainInline:
     @staticmethod
     def main_menu_kb():
         keyboard = [
-            [InlineKeyboardButton(text="🔎 Search for brochure", callback_data="select_brochure")],
-            [InlineKeyboardButton(text="💰 Generate sales offer", callback_data="price_calculation")]
+            [InlineKeyboardButton(text="1️⃣ Search for brochure 🔎", callback_data="select_brochure")],
+            [InlineKeyboardButton(text="2️⃣ Generate sales offer 💰", callback_data="price_calculation")]
         ]
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
 

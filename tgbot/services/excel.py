@@ -15,8 +15,9 @@ class ExcelFile:
 
     @staticmethod
     def __reformat_date(date: Optional[datetime]) -> str:
-        result = date.strftime("%d-%m-%Y %H:%M") if date else "---"
-        return result
+        result_date = date.strftime("%d.%m.%Y") if date else "---"
+        result_time = date.strftime("%H:%M") if date else "---"
+        return result_date, result_time
 
     def create_users_file(self, users: List[dict]):
         wb = Workbook()
@@ -26,6 +27,7 @@ class ExcelFile:
                 "User ID",
                 "Username",
                 "Дата регистрации (utc)",
+                "Время регистрации (utc)",
                 "Количество запросов"
             )
         )
@@ -34,12 +36,13 @@ class ExcelFile:
             for cell in row:
                 cell.font = title_ft
 
-        for user in users:
+        for i, user in enumerate(users, start=2):
             ws.append(
                 (
                     user["user_id"],
                     user["username"],
-                    self.__reformat_date(user["create_dtime"]),
+                    self.__reformat_date(user["create_dtime"])[0],
+                    self.__reformat_date(user["create_dtime"])[1],
                     user["request_count"],
                 )
             )
@@ -86,6 +89,7 @@ class ExcelFile:
         ws.append(())
         total_payment = 0
         for i, item in enumerate(payments, start=2):
+            one_payment_row = i + 7
             total_payment += item["payment_value"]
             ws.append(
                 (
@@ -94,14 +98,13 @@ class ExcelFile:
                     item["payment_value"],
                 )
             )
-            for cell in ws[f"A{i + 8}:C{i + 8}"][0]:
+            for cell in ws[f"A{one_payment_row}:C{one_payment_row}"][0]:
                 cell.font = Font(name='Arial', size=11)
                 cell.border = Border(left=bd, top=bd, right=bd, bottom=bd)
-            ws[f"C{i + 8}"].number_format = "[$AED ]### ### ##0"
+            ws[f"C{one_payment_row}"].number_format = "[$AED ]### ### ##0"
 
         if len(payments) > 0:
-            post_payment_row = len(payments) + 10
-
+            post_payment_row = len(payments) + 9
             ws.append(
                 (
                     "Total (post payment)",
@@ -115,9 +118,9 @@ class ExcelFile:
                 cell.font = Font(name='Arial', size=11, bold=True)
                 cell.border = Border(left=bd, top=bd, right=bd, bottom=bd)
             ws.append(())
-            total_cost_row = len(payments) + 12
+            total_cost_row = len(payments) + 11
         else:
-            total_cost_row = 10
+            total_cost_row = 9
         ws.append(
             (
                 "Total cost for BUYER:	",
@@ -145,7 +148,6 @@ class ExcelFile:
         ws["C5"] = dld_transfer_fee
         ws["C6"] = dld_registration_trusty_fee
         ws["C7"] = ww_agency_fee
-        ws["C8"] = 0
         ws[f"C{total_cost_row}"] = total_cost_for_buyer
         wb.save(self.calculation_path)
 
