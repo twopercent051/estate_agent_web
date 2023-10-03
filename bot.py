@@ -5,6 +5,7 @@ from tgbot.handlers.admin.main_block import router as admin_main_block
 from tgbot.handlers.user.blocks.main_block import router as user_main_block
 from tgbot.handlers.user.blocks.select_brochure_block import router as user_select_brochure_block
 from tgbot.handlers.user.blocks.price_calculation_block import router as user_price_calculation_block
+from tgbot.handlers.user.blocks.commercial_proposal_block import router as user_commercial_proposal_block
 
 from create_bot import bot, dp, logger, register_global_middlewares, config
 from tgbot.handlers.user.middlewares import NotInChannelMiddleware
@@ -17,7 +18,8 @@ admin_router = [
 user_router = [
     user_main_block,
     user_select_brochure_block,
-    user_price_calculation_block
+    user_price_calculation_block,
+    user_commercial_proposal_block
 ]
 
 # for router in user_router:

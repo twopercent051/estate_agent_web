@@ -33,3 +33,4 @@ asyncpg~=0.27.0
 pydantic~=1.10.7
 SQLAlchemy~=2.0.15
 openpyxl~=3.1.2
+telegraph~=2.2.0

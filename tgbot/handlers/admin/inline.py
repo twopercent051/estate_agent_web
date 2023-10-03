@@ -49,6 +49,9 @@ class InlineKeyboard:
             there_are_payments="Есть ли платежи?",
             continue_payments="Продолжить ввод платежей?",
             calculation_result="Результат расчёта",
+            album_photo="Результат расчёта",
+            calc_photo="Результат расчёта",
+            proposal_result="Результат расчёта",
         )
         keyboard = []
         for button in kb_dict:

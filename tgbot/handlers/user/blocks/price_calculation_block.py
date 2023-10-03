@@ -1,15 +1,13 @@
-import itertools
 import os
 
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.utils.markdown import hcode
 
 from create_bot import bot, config
 from tgbot.handlers.admin.main_block import excel_file
 from tgbot.misc.states import UserFSM
-from tgbot.models.sql_connector import FilesDAO, TextsDAO, UsersDAO
+from tgbot.models.sql_connector import TextsDAO
 from tgbot.handlers.user.inline import CalculationPriceInline
 
 router = Router()
