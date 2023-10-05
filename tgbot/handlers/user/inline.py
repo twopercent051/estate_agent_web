@@ -53,6 +53,18 @@ class CalculationPriceInline(MainInline):
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 
+class CommercialProposalInline(MainInline):
+
+    def upload_layout_photo_kb(self):
+        keyboard = [
+            [
+                InlineKeyboardButton(text="Upload layout photo", callback_data="upload_layout"),
+                self._home_button
+            ]
+        ]
+        return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+
 class CheckChannelInline(MainInline):
 
     @staticmethod

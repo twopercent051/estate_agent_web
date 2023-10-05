@@ -36,6 +36,7 @@ class FilesDB(Base):
     file_name = Column(String, nullable=False)
 
 
+
 class UsersDB(Base):
     __tablename__ = "users"
 
@@ -44,6 +45,7 @@ class UsersDB(Base):
     username = Column(String, nullable=False)
     create_dtime = Column(DateTime, nullable=False, server_default=UtcNow())
     request_count = Column(Integer, nullable=False, server_default="0")
+    telegraph_token = Column(String, nullable=True)
 
 
 class TextsDB(Base):
@@ -158,3 +160,10 @@ class UsersDAO(BaseDAO):
             query = select(cls.model.__table__.columns).order_by(cls.model.request_count.desc())
             result = await session.execute(query)
             return result.mappings().all()
+
+    @classmethod
+    async def update_by_user_id(cls, user_id: str, **data):
+        async with async_session_maker() as session:
+            stmt = update(cls.model).values(**data).filter_by(user_id=user_id)
+            await session.execute(stmt)
+            await session.commit()

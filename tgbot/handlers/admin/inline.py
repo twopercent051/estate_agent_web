@@ -50,6 +50,9 @@ class InlineKeyboard:
             continue_payments="Продолжить ввод платежей?",
             calculation_result="Результат расчёта",
             album_photo="Альбом фотографий",
+            is_more_photo="Еще фотографии?",
+            layout_photo="Фото планировки",
+            description="Описание",
             calc_photo="Скрин расчёта",
             proposal_result="Результат Телеграф",
         )

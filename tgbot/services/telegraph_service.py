@@ -1,42 +1,93 @@
+import json
 from typing import List, Optional
 
-import requests
-from telegraph import Telegraph
+import aiofiles
+import aiohttp
+from telegraph.utils import HtmlToNodesParser
 
-from create_bot import config
-
-token = config.tg_bot.telegraph_token
-telegraph = Telegraph(token)
+from tgbot.models.sql_connector import UsersDAO
 
 
 class TelegraphCreatePage:
 
     @staticmethod
-    def __upload_files(file_name: str) -> str:
-        with open(file_name, "rb") as file:
+    async def __upload_files(file_name: str) -> str:
+        async with aiofiles.open(file_name, "rb") as file:
             url = "https://telegra.ph/upload"
-            response = requests.post(url, files={"file": ("file", file)}, timeout=1)
-        return f'https://telegra.ph{response.json()[0]["src"]}'
+            async with aiohttp.ClientSession() as session:
+                data = aiohttp.FormData()
+                data.add_field('file', file, filename='file')
+                async with session.post(url=url, data=data, timeout=100) as resp:
+                    resp = await resp.json()
+        return f'https://telegra.ph{resp[0]["src"]}'
+
+    @staticmethod
+    async def __get_or_create_token(user_id: str | int, author_name: str) -> str:
+        user = await UsersDAO.get_one_or_none(user_id=str(user_id))
+        if user["telegraph_token"]:
+            return user["telegraph_token"]
+        async with aiohttp.ClientSession() as session:
+            url = "https://api.telegra.ph/createAccount"
+            params = dict(short_name=author_name, author_name=author_name)
+            async with session.get(url=url, params=params, timeout=100) as resp:
+                resp = await resp.json()
+                await UsersDAO.update_by_user_id(user_id=str(user_id), telegraph_token=resp["result"]["access_token"])
+                return resp["result"]["access_token"]
+
+    @staticmethod
+    async def __create_page_request(token: str, title: str, author_name: str, content: List[dict]) -> str:
+        async with aiohttp.ClientSession() as session:
+            url = "https://api.telegra.ph/createPage"
+            params = dict(
+                access_token=token,
+                title=title,
+                author_name=author_name,
+                content=content,
+                return_content="true"
+            )
+            async with session.get(url=url, params=params, timeout=100) as resp:
+                resp = await resp.json()
+                return resp["result"]["url"]
+
+    @staticmethod
+    def html_to_nodes(html_content):
+        parser = HtmlToNodesParser()
+        parser.feed(html_content)
+        return parser.get_nodes()
 
     @classmethod
-    def create_page(cls, album_photos: List[str], calc_photo: str, author: Optional[str]) -> str:
-        album_urls = []
+    async def create_page(
+            cls,
+            user_id: str | int,
+            album_photos: List[str],
+            layout_photo: str,
+            description: str,
+            calc_photo: str,
+            author: Optional[str]
+    ) -> str:
+        content = []
         for photo in album_photos:
-            photo_url = cls.__upload_files(file_name=photo)
-            album_urls.append(photo_url)
-            print(photo_url)
-        calc_url = cls.__upload_files(file_name=calc_photo)
-        print(calc_url)
-        content = ["<p>Фото объекта:</p>"]
-        for photo in album_urls:
-            content.append(f'<img src="{photo}">')
-        content.extend(
-            [
-                "<p>Расчёты:</p>",
-                f'<img src="{calc_url}">'
-            ]
+            photo_url = await cls.__upload_files(file_name=photo)
+            content.append(f'<figure><img src="{photo_url}"><figcaption>Фото объекта</figcaption></figure>')
+        layout_url = await cls.__upload_files(file_name=layout_photo)
+        calc_url = await cls.__upload_files(file_name=calc_photo)
+        content_extend = [
+            "<br>",
+            f'<figure><img src="{layout_url}"><figcaption>Layout</figcaption></figure>',
+            "<br>"
+            f"<p>{description}</p>",
+            "<br>"
+            f'<figure><img src="{calc_url}"><figcaption>Calculation</figcaption></figure>'
+        ]
+        content.extend(content_extend)
+        content = cls.html_to_nodes(html_content="\n".join(content))
+        content = json.dumps(content)
+        author_name = author if author else "Author"
+        token = await cls.__get_or_create_token(user_id=user_id, author_name=author_name)
+        page = await cls.__create_page_request(
+            token=token,
+            title="Commercial proposal",
+            author_name=author_name,
+            content=content
         )
-        response = telegraph.create_page(title="Коммерческое предложение",
-                                         html_content="\n".join(content),
-                                         author_name=author)
-        return f"https://telegra.ph/{response['path']}"
+        return page

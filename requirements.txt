@@ -34,3 +34,5 @@ pydantic~=1.10.7
 SQLAlchemy~=2.0.15
 openpyxl~=3.1.2
 telegraph~=2.2.0
+aiofiles~=23.1.0
+aiograph~=0.2
