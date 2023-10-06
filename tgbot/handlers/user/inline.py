@@ -14,8 +14,8 @@ class MainInline:
     def main_menu_kb():
         keyboard = [
             [InlineKeyboardButton(text="1️⃣ Search for brochure 🔎", callback_data="select_brochure")],
-            [InlineKeyboardButton(text="2️⃣ Generate sales offer 💰", callback_data="price_calculation")],
-            [InlineKeyboardButton(text="3️⃣ Generate commercial proposal 💡", callback_data="commercial_proposal")],
+            [InlineKeyboardButton(text="2️⃣ Generate sale calculation 💰", callback_data="price_calculation")],
+            [InlineKeyboardButton(text="3️⃣ Generate sales offer 💡", callback_data="commercial_proposal")],
         ]
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
