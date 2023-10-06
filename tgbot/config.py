@@ -25,7 +25,6 @@ class TgBot:
     admin_group: str
     use_redis: bool
     check_chat_id: str
-    telegraph_token: str
 
 
 @dataclass
@@ -52,7 +51,6 @@ def load_config(path: str = None):
             admin_group=env.str('ADMIN_GROUP'),
             use_redis=env.bool("USE_REDIS"),
             check_chat_id=env.str("CHECK_CHAT_ID"),
-            telegraph_token=env.str("TELEGRAPH_TOKEN")
         ),
         db=DbConfig(
             host=env.str('DB_HOST'),
