@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from openpyxl import Workbook
 from openpyxl.reader.excel import load_workbook
-from openpyxl.styles import Font, Side, Border, PatternFill
+from openpyxl.styles import Font, Side, Border, PatternFill, Alignment
 import os
 
 
@@ -84,7 +84,8 @@ class ExcelFile:
     def create_calculation_file(self, net_to_seller: int, payments: List[dict]):
         wb = load_workbook(filename=f"calculation_template.xlsx")
         ws = wb.active
-        ws["C1"] = net_to_seller
+        # net_to_seller = f"AED {'{0:,}'.format(net_to_seller).replace(',', ' ')}"
+        ws["C1"] = f"AED {'{0:,}'.format(net_to_seller).replace(',', ' ')}"
         bd = Side(style='thin', color="000000")
         ws.append(())
         total_payment = 0
@@ -95,13 +96,14 @@ class ExcelFile:
                 (
                     f"{i} payment",
                     item["payment_date"],
-                    item["payment_value"],
+                    f"AED {'{0:,}'.format(item['payment_value']).replace(',', ' ')}",
+                    # item["payment_value"],
                 )
             )
             for cell in ws[f"A{one_payment_row}:C{one_payment_row}"][0]:
                 cell.font = Font(name='Arial', size=11)
                 cell.border = Border(left=bd, top=bd, right=bd, bottom=bd)
-            ws[f"C{one_payment_row}"].number_format = "[$AED ]### ### ##0"
+            # ws[f"C{one_payment_row}"].number_format = "[$AED ]### ### ##0"
 
         if len(payments) > 0:
             post_payment_row = len(payments) + 9
@@ -109,10 +111,11 @@ class ExcelFile:
                 (
                     "Total (post payment)",
                     "",
-                    total_payment,
+                    # total_payment,
+                    f"AED {'{0:,}'.format(total_payment).replace(',', ' ')}",
                 )
             )
-            ws[f"C{post_payment_row}"].number_format = "[$AED ]### ### ##0"
+            # ws[f"C{post_payment_row}"].number_format = "[$AED ]### ### ##0"
             ws.merge_cells(f"A{post_payment_row}:B{post_payment_row}")
             for cell in ws[f"A{post_payment_row}:C{post_payment_row}"][0]:
                 cell.font = Font(name='Arial', size=11, bold=True)
@@ -125,10 +128,11 @@ class ExcelFile:
             (
                 "Total cost for BUYER:	",
                 "",
-                total_payment,
+                f"AED {'{0:,}'.format(total_payment).replace(',', ' ')}",
+                # total_payment,
             )
         )
-        ws[f"C{total_cost_row}"].number_format = "[$AED ]### ### ##0"
+        # ws[f"C{total_cost_row}"].number_format = "[$AED ]### ### ##0"
         for cell in ws[f"A{total_cost_row}:C{total_cost_row}"][0]:
             cell.font = Font(name='Arial', size=11, bold=True)
             cell.border = Border(left=bd, top=bd, right=bd, bottom=bd)
@@ -142,13 +146,21 @@ class ExcelFile:
         total_on_transfer_date = initial_payment_to_seller + dld_transfer_fee + dld_registration_trusty_fee
         total_on_transfer_date += ww_agency_fee
         total_cost_for_buyer = total_payment + total_on_transfer_date
-        ws["C3"] = total_on_transfer_date
-        ws["C4"] = initial_payment_to_seller
+        # ws["C3"] = total_on_transfer_date
+        ws["C3"] = f"AED {'{0:,}'.format(total_on_transfer_date).replace(',', ' ')}"
+        # ws["C4"] = initial_payment_to_seller
+        ws["C4"] = f"AED {'{0:,}'.format(initial_payment_to_seller).replace(',', ' ')}"
         ws["B4"] = initial_payment_to_seller_percent
-        ws["C5"] = dld_transfer_fee
-        ws["C6"] = dld_registration_trusty_fee
-        ws["C7"] = ww_agency_fee
-        ws[f"C{total_cost_row}"] = total_cost_for_buyer
+        # ws["C5"] = dld_transfer_fee
+        ws["C5"] = f"AED {'{0:,}'.format(dld_transfer_fee).replace(',', ' ')}"
+        # ws["C6"] = dld_registration_trusty_fee
+        ws["C6"] = f"AED {'{0:,}'.format(dld_registration_trusty_fee).replace(',', ' ')}"
+        # ws["C7"] = ww_agency_fee
+        ws["C7"] = f"AED {'{0:,}'.format(ww_agency_fee).replace(',', ' ')}"
+        # ws[f"C{total_cost_row}"] = total_cost_for_buyer
+        ws[f"C{total_cost_row}"] = f"AED {'{0:,}'.format(total_cost_for_buyer).replace(',', ' ')}"
+        for row in ws["C:C"]:
+            row.alignment = Alignment(horizontal='right')
         wb.save(self.calculation_path)
 
 

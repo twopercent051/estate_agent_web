@@ -1,4 +1,5 @@
 import json
+import sys
 from typing import List, Optional
 
 import aiofiles
@@ -84,6 +85,8 @@ class TelegraphCreatePage:
         content = json.dumps(content)
         author_name = author if author else "Author"
         token = await cls.__get_or_create_token(user_id=user_id, author_name=author_name)
+        bytes_count = sys.getsizeof(content)
+        print(bytes_count)
         page = await cls.__create_page_request(
             token=token,
             title="Commercial proposal",
