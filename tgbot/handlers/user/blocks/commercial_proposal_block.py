@@ -51,10 +51,11 @@ async def commercial_proposal_block(callback: CallbackQuery, state: FSMContext):
 
 @router.message(F.photo, UserFSM.layout_photo)
 async def commercial_proposal_block(message: Message, state: FSMContext):
-    text = await TextsDAO.get_text(chapter="description")
+    # text = await TextsDAO.get_text(chapter="description")
+    text = await TextsDAO.get_text(chapter="calc_photo")
     kb = inline.home_kb()
     await state.update_data(layout_photo=message.photo[-1].file_id)
-    await state.set_state(UserFSM.description)
+    await state.set_state(UserFSM.calc_photo)
     await message.answer(text, reply_markup=kb)
 
 
@@ -85,7 +86,7 @@ async def commercial_proposal_block(message: Message, state: FSMContext):
         user_id=message.from_user.id,
         album_photos=album_files,
         layout_photo=layout_name,
-        description=state_data["description"],
+        # description=state_data["description"],
         calc_photo=calc_name,
         author=message.from_user.username
     )

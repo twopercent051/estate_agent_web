@@ -62,7 +62,7 @@ class TelegraphCreatePage:
             user_id: str | int,
             album_photos: List[str],
             layout_photo: str,
-            description: str,
+            # description: str,
             calc_photo: str,
             author: Optional[str]
     ) -> str:
@@ -75,8 +75,8 @@ class TelegraphCreatePage:
         content_extend = [
             "<br>",
             f'<figure><img src="{layout_url}"><figcaption>Layout</figcaption></figure>',
-            "<br>"
-            f"<p>{description}</p>",
+            # "<br>"
+            # f"<p>{description}</p>",
             "<br>"
             f'<figure><img src="{calc_url}"><figcaption>Calculation</figcaption></figure>'
         ]
