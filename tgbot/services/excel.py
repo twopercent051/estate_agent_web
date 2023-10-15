@@ -28,7 +28,9 @@ class ExcelFile:
                 "Username",
                 "Дата регистрации (utc)",
                 "Время регистрации (utc)",
-                "Количество запросов"
+                "Количество запросов (брошюры)",
+                "Количество запросов (калькуляция)",
+                "Количество запросов (телеграф)",
             )
         )
         title_ft = Font(bold=True)
@@ -44,6 +46,8 @@ class ExcelFile:
                     self.__reformat_date(user["create_dtime"])[0],
                     self.__reformat_date(user["create_dtime"])[1],
                     user["request_count"],
+                    user["calculation_count"],
+                    user["telegraph_count"],
                 )
             )
         wb.save(self.users_path)

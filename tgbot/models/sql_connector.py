@@ -36,7 +36,6 @@ class FilesDB(Base):
     file_name = Column(String, nullable=False)
 
 
-
 class UsersDB(Base):
     __tablename__ = "users"
 
@@ -45,6 +44,8 @@ class UsersDB(Base):
     username = Column(String, nullable=False)
     create_dtime = Column(DateTime, nullable=False, server_default=UtcNow())
     request_count = Column(Integer, nullable=False, server_default="0")
+    calculation_count = Column(Integer, nullable=True, server_default="0")
+    telegraph_count = Column(Integer, nullable=True, server_default="0")
     telegraph_token = Column(String, nullable=True)
 
 
@@ -151,6 +152,21 @@ class UsersDAO(BaseDAO):
     async def update_requests(cls, user_id: str):
         async with async_session_maker() as session:
             stmt = update(cls.model).values(request_count=cls.model.request_count + 1).filter_by(user_id=user_id)
+            await session.execute(stmt)
+            await session.commit()
+
+    @classmethod
+    async def update_calculation(cls, user_id: str):
+        async with async_session_maker() as session:
+            stmt = update(cls.model).values(calculation_count=cls.model.calculation_count + 1).\
+                filter_by(user_id=user_id)
+            await session.execute(stmt)
+            await session.commit()
+
+    @classmethod
+    async def update_telegraph_count(cls, user_id: str):
+        async with async_session_maker() as session:
+            stmt = update(cls.model).values(telegraph_count=cls.model.telegraph_count + 1).filter_by(user_id=user_id)
             await session.execute(stmt)
             await session.commit()
 

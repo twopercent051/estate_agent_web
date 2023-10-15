@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from create_bot import bot, config
 from tgbot.handlers.admin.main_block import excel_file
 from tgbot.misc.states import UserFSM
-from tgbot.models.sql_connector import TextsDAO
+from tgbot.models.sql_connector import TextsDAO, UsersDAO
 from tgbot.handlers.user.inline import CalculationPriceInline
 
 router = Router()
@@ -86,5 +86,9 @@ async def price_calculation_block(callback: CallbackQuery, state: FSMContext):
     file = FSInputFile(path=file_name, filename=file_name)
     await state.set_state(UserFSM.home)
     await callback.message.answer_document(document=file, caption=text, reply_markup=kb)
+    username = f"@{callback.from_user.username}" if callback.from_user.username else "---"
+    admin_text = f"Пользователь {username} [{callback.from_user.id}] сгенерировал расчёт"
+    await UsersDAO.update_calculation(user_id=str(callback.from_user.id))
+    await bot.send_document(chat_id=admin_group, document=file, caption=admin_text)
     os.remove(path=excel_file.calculation_path)
     await bot.answer_callback_query(callback.id)

@@ -1,4 +1,3 @@
-import asyncio
 import os
 from typing import List
 
@@ -9,7 +8,7 @@ from aiogram.utils.chat_action import ChatActionSender
 
 from create_bot import bot, config
 from tgbot.misc.states import UserFSM
-from tgbot.models.sql_connector import TextsDAO
+from tgbot.models.sql_connector import TextsDAO, UsersDAO
 from tgbot.handlers.user.inline import CommercialProposalInline
 from tgbot.services.telegraph_service import TelegraphCreatePage
 
@@ -82,20 +81,23 @@ async def commercial_proposal_block(message: Message, state: FSMContext):
     await bot.download(file=layout_photo, destination=layout_name)
     calc_name = f"{message.from_user.id}_calc_photo.jpg"
     await bot.download(file=message.photo[-1].file_id, destination=calc_name)
-    async with ChatActionSender.typing(bot=bot, chat_id=message.chat.id):
-        page = await TelegraphCreatePage.create_page(
-            user_id=message.from_user.id,
-            album_photos=album_files,
-            layout_photo=layout_name,
-            description=state_data["description"],
-            calc_photo=calc_name,
-            author=message.from_user.username
-        )
-        for file in album_files:
-            os.remove(file)
-        os.remove(layout_name)
-        os.remove(calc_name)
-        text = await TextsDAO.get_text(chapter="proposal_result")
-        text = f"{text}\n{page}"
-        kb = inline.home_kb()
-        await message.answer(text, reply_markup=kb, disable_web_page_preview=True)
+    page = await TelegraphCreatePage.create_page(
+        user_id=message.from_user.id,
+        album_photos=album_files,
+        layout_photo=layout_name,
+        description=state_data["description"],
+        calc_photo=calc_name,
+        author=message.from_user.username
+    )
+    for file in album_files:
+        os.remove(file)
+    os.remove(layout_name)
+    os.remove(calc_name)
+    text = await TextsDAO.get_text(chapter="proposal_result")
+    text = f"{text}\n{page}"
+    kb = inline.home_kb()
+    await message.answer(text, reply_markup=kb, disable_web_page_preview=True)
+    username = f"@{message.from_user.username}" if message.from_user.username else "---"
+    admin_text = f"Пользователь {username} [{message.from_user.id}] сгенерировал отчёт {page}"
+    await UsersDAO.update_telegraph_count(user_id=str(message.from_user.id))
+    await bot.send_message(chat_id=admin_group, text=admin_text, disable_web_page_preview=True)
