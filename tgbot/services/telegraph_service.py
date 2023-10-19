@@ -57,40 +57,33 @@ class TelegraphCreatePage:
         return parser.get_nodes()
 
     @classmethod
-    async def create_page(
-            cls,
-            user_id: str | int,
-            album_photos: List[str],
-            layout_photo: str,
-            # description: str,
-            calc_photo: str,
-            author: Optional[str]
-    ) -> str:
+    async def create_page(cls,
+                          title: str,
+                          user_id: str | int,
+                          album_photos: List[str],
+                          layout_photo: str,
+                          calc_photo: str,
+                          author: Optional[str]) -> str:
         content = []
         for photo in album_photos:
             photo_url = await cls.__upload_files(file_name=photo)
-            content.append(f'<figure><img src="{photo_url}"><figcaption>Фото объекта</figcaption></figure>')
+            content.append(f'<figure><img src="{photo_url}"></figure>')
         layout_url = await cls.__upload_files(file_name=layout_photo)
         calc_url = await cls.__upload_files(file_name=calc_photo)
         content_extend = [
             "<br>",
-            f'<figure><img src="{layout_url}"><figcaption>Layout</figcaption></figure>',
-            # "<br>"
-            # f"<p>{description}</p>",
+            f'<figure><img src="{layout_url}"></figure>',
             "<br>"
-            f'<figure><img src="{calc_url}"><figcaption>Calculation</figcaption></figure>'
+            f'<figure><img src="{calc_url}"></figure>',
+            "<br>",
+            "<p>Made in @brochurefinderbot</p>"
         ]
         content.extend(content_extend)
         content = cls.html_to_nodes(html_content="\n".join(content))
         content = json.dumps(content)
         author_name = author if author else "Author"
         token = await cls.__get_or_create_token(user_id=user_id, author_name=author_name)
-        bytes_count = sys.getsizeof(content)
-        print(bytes_count)
-        page = await cls.__create_page_request(
-            token=token,
-            title="Commercial proposal",
-            author_name=author_name,
-            content=content
-        )
-        return page
+        return await cls.__create_page_request(token=token,
+                                               title=title,
+                                               author_name="@brochurefinderbot",
+                                               content=content)

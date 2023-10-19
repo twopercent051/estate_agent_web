@@ -18,6 +18,7 @@ class UserFSM(StatesGroup):
     net_to_seller = State()
     payment_date = State()
     payment_value = State()
+    proposal_title = State()
     album_photo = State()
     layout_photo = State()
     description = State()

@@ -33,29 +33,28 @@ class InlineKeyboard:
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
     def edit_texts_kb(self):
-        kb_dict = dict(
-            subscribe_channel="Подпишитесь на канал",
-            main_menu="Главное меню",
-            greeting_select_brochure="Приветствие поиска брошюры",
-            nothing_found="Ничего не найдено",
-            found_materials="Найдены брошюры",
-            write_request="Напишите свой вопрос",
-            message_sent="Сообщение отправлено",
-            message_from_support="Сообщение от поддержки",
-            net_to_seller="Net to seller",
-            enter_date="Введите дату",
-            enter_payment="Введите платёж",
-            not_integer="Ввели не число",
-            there_are_payments="Есть ли платежи?",
-            continue_payments="Продолжить ввод платежей?",
-            calculation_result="Результат расчёта",
-            album_photo="Альбом фотографий",
-            is_more_photo="Еще фотографии?",
-            layout_photo="Фото планировки",
-            description="Описание",
-            calc_photo="Скрин расчёта",
-            proposal_result="Результат Телеграф",
-        )
+        kb_dict = dict(subscribe_channel="Подпишитесь на канал",
+                       main_menu="Главное меню",
+                       greeting_select_brochure="Приветствие поиска брошюры",
+                       nothing_found="Ничего не найдено",
+                       found_materials="Найдены брошюры",
+                       write_request="Напишите свой вопрос",
+                       message_sent="Сообщение отправлено",
+                       message_from_support="Сообщение от поддержки",
+                       net_to_seller="Net to seller",
+                       enter_date="Введите дату",
+                       enter_payment="Введите платёж",
+                       not_integer="Ввели не число",
+                       there_are_payments="Есть ли платежи?",
+                       continue_payments="Продолжить ввод платежей?",
+                       calculation_result="Результат расчёта",
+                       proposal_title="Название в телеграфе",
+                       album_photo="Альбом фотографий",
+                       is_more_photo="Еще фотографии?",
+                       layout_photo="Фото планировки",
+                       description="Описание",
+                       calc_photo="Скрин расчёта",
+                       proposal_result="Результат Телеграф")
         keyboard = []
         for button in kb_dict:
             keyboard.append([InlineKeyboardButton(text=kb_dict[button], callback_data=f"edit_text:{button}")])

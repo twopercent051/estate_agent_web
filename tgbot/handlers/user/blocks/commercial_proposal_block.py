@@ -21,12 +21,20 @@ admin_group = config.tg_bot.admin_group
 
 @router.callback_query(F.data == "commercial_proposal")
 async def commercial_proposal_block(callback: CallbackQuery, state: FSMContext):
+    text = await TextsDAO.get_text(chapter="proposal_title")
+    kb = inline.home_kb()
+    await state.set_state(UserFSM.proposal_title)
+    await callback.message.answer(text, reply_markup=kb)
+    await bot.answer_callback_query(callback.id)
+
+
+@router.message(F.text, UserFSM.proposal_title)
+async def commercial_proposal_block(message: Message, state: FSMContext):
     text = await TextsDAO.get_text(chapter="album_photo")
     kb = inline.home_kb()
     await state.set_state(UserFSM.album_photo)
-    await state.update_data(album_photo=[])
-    await callback.message.answer(text, reply_markup=kb)
-    await bot.answer_callback_query(callback.id)
+    await state.update_data(album_photo=[], title=message.text)
+    await message.answer(text, reply_markup=kb)
 
 
 @router.message(F.photo, UserFSM.album_photo)
@@ -82,14 +90,12 @@ async def commercial_proposal_block(message: Message, state: FSMContext):
     await bot.download(file=layout_photo, destination=layout_name)
     calc_name = f"{message.from_user.id}_calc_photo.jpg"
     await bot.download(file=message.photo[-1].file_id, destination=calc_name)
-    page = await TelegraphCreatePage.create_page(
-        user_id=message.from_user.id,
-        album_photos=album_files,
-        layout_photo=layout_name,
-        # description=state_data["description"],
-        calc_photo=calc_name,
-        author=message.from_user.username
-    )
+    page = await TelegraphCreatePage.create_page(user_id=message.from_user.id,
+                                                 title=state_data["title"],
+                                                 album_photos=album_files,
+                                                 layout_photo=layout_name,
+                                                 calc_photo=calc_name,
+                                                 author=message.from_user.username)
     for file in album_files:
         os.remove(file)
     os.remove(layout_name)
