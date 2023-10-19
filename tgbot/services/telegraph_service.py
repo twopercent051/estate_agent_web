@@ -76,7 +76,7 @@ class TelegraphCreatePage:
             "<br>"
             f'<figure><img src="{calc_url}"></figure>',
             "<br>",
-            "<p>Made in @brochurefinderbot</p>"
+            '<p>Made in <a href="https://t.me/Brochurefinderbot">@brochurefinderbot</a></p>'
         ]
         content.extend(content_extend)
         content = cls.html_to_nodes(html_content="\n".join(content))
