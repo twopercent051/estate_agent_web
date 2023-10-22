@@ -1,17 +1,39 @@
 version: '3.8'
 
 services:
+
+  estate_redis:
+    image: redis:7
+    container_name: estate_agent_redis
+
+
+  database_app:
+    image: database_app
+    build:
+      context: ./database
+    container_name: database_app
+    restart: always
+    depends_on:
+      - estate_redis
+    env_file:
+      - "database/.env"
+    command: sh -c "gunicorn main:app  --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:7777"
+    ports:
+      - "443:7777"
+
+
   bot:
-    image: "${BOT_IMAGE_NAME:-tg_bot-image}"
-    container_name: "${BOT_CONTAINER_NAME:-tg_bot-container}"
+    image: bot
+    container_name: bot
     stop_signal: SIGINT
     build:
-      context: .
-    network_mode: "host"
-    working_dir: "/usr/src/app/${BOT_NAME:-tg_bot}"
+      context: bot
+    working_dir: "/usr/src/bot/bot"
     volumes:
-    - .:/usr/src/app/${BOT_NAME:-tg_bot}
+      - .:/usr/src/bot
     command: python3 -m bot
     restart: always
     env_file:
-      - ".env"
+      - "bot/.env"
+    depends_on:
+      - database_app

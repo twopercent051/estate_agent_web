@@ -1,0 +1,12 @@
+fastapi
+gunicorn
+uvicorn
+environs==9.5.0
+aioredis==2.0.1
+python-dotenv==0.21.0
+redis==4.5.3
+betterlogging~=0.2.1
+alembic~=1.11.1
+asyncpg~=0.27.0
+pydantic~=1.10.7
+SQLAlchemy~=2.0.15
