@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{ module_title }}
+{% endblock title %}
+{% block content %}
+    <h3>Рассылка</h3>
+    
+    <form action="/sent_mailing" method="post">
+        <h5>Запросы брошюр</h5>
+        <i>С</i>
+        <input type="number" name="brochures_low">
+        <i>По</i>
+        <input type="number" name="brochures_high">
+
+        <h5>Расчёт стоимости</h5>
+        <i>С</i>
+        <input type="number" name="calc_low">
+        <i>По</i>
+        <input type="number" name="calc_high">
+
+        <h5>Телеграф</h5>
+        <i>С</i>
+        <input type="number" name="telegraph_low">
+        <i>По</i>
+        <input type="number" name="telegraph_high">
+
+        <h5>Текст рассылки</h5>
+        <textarea name="text" cols="100" rows="20" required></textarea>
+
+        <p>
+            <input type="submit" value="Отправить">
+        </p>
+    </form>
+
+    {% if success_data is not none %}
+        <div>✅ Сообщение отправлено {{ success_data.success_counter }} / {{ success_data.total_length }} пользователям</div>
+    {% endif %}
+
+{% endblock content %}

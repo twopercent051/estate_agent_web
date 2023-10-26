@@ -2,24 +2,22 @@ version: '3.8'
 
 services:
 
-  estate_redis:
+  redis:
     image: redis:7
-    container_name: estate_agent_redis
+    container_name: redis
 
 
-  database_app:
-    image: database_app
+  db_app:
+    image: db_app
     build:
       context: ./database
-    container_name: database_app
+    container_name: db_app
     restart: always
     depends_on:
-      - estate_redis
+      - redis
     env_file:
       - "database/.env"
     command: sh -c "gunicorn main:app  --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:7777"
-    ports:
-      - "443:7777"
 
 
   bot:
@@ -27,7 +25,7 @@ services:
     container_name: bot
     stop_signal: SIGINT
     build:
-      context: bot
+      context: ./bot
     working_dir: "/usr/src/bot/bot"
     volumes:
       - .:/usr/src/bot
@@ -36,4 +34,36 @@ services:
     env_file:
       - "bot/.env"
     depends_on:
-      - database_app
+      - db_app
+
+
+  app:
+    image: app
+    build:
+      context: ./app
+    container_name: app
+    restart: always
+    depends_on:
+      - db_app
+    env_file:
+      - "app/.env"
+    #      volumes:
+    #        - "./certs:/usr/src/certs"
+    command: sh -c "gunicorn main:app  --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000"
+
+
+  nginx:
+    build:
+      context: .
+      dockerfile: "./app/Dockerfile.nginx"
+    container_name: app_nginx
+    restart: always
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    links:
+      - app
+
+

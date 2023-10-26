@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{ module_title }}
+{% endblock title %}
+{% block content %}
+    <h3>{{ module_title }}</h3>
+    <div>
+        
+        <form action="/save_text" id="textForm" method="post">
+        {% for handler in handlers %}
+            <hr>
+            <h4>{{ handler.handler_title }}</h4>
+            {% for lang_text in handler.handler_texts %}
+                <p>
+                    Язык {{ lang_text.lang }}
+                    <textarea rows="7" cols="30"
+                    name="{{ module }}:{{ handler.handler_clb }}:text:{{ lang_text.lang }}">{{ lang_text.handler_text }}</textarea>
+                </p>
+            {% endfor %}
+            {% for button in handler.handler_buttons %}
+                <p>
+                    <input type="text" name="{{ module }}:{{ handler.handler_clb }}:{{ button.clb_data }}:{{ button.lang }}" 
+                    placeholder="{{ button.button_text }}">
+                    <label for="{{ button.clb_data }}">{{ button.button_title }} [{{ button.lang }}]</label>
+                </p>
+            {% endfor %}
+        {% endfor %}
+        <input type="submit" value="Сохранить">
+        </form>
+    </div>
+
+{% endblock content %}

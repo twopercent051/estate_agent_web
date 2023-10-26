@@ -5,7 +5,7 @@ import aiofiles
 import aiohttp
 from telegraph.utils import HtmlToNodesParser
 
-from bot.tgbot.models.sql_connector import UsersDAO
+from tgbot.api_models.sql_connector import UsersDAO
 
 
 class TelegraphCreatePage:

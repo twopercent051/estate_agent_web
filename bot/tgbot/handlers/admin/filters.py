@@ -3,7 +3,7 @@ from typing import Union
 from aiogram.filters import BaseFilter
 from aiogram.types import Message, CallbackQuery
 
-from bot.tgbot.config import Config
+from tgbot.config import Config
 
 
 class AdminFilter(BaseFilter):

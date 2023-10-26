@@ -2,11 +2,11 @@ from typing import List
 
 from fastapi import APIRouter
 
-from models.sql_connector import FilesDAO
+from models.sql_connector import ModelsUsersDAO
 
 router = APIRouter(prefix="/sql_files", tags=["Files"])
 
-model = FilesDAO
+model = ModelsUsersDAO
 
 
 @router.post("/get_one")

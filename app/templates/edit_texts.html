@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}
+    Редактура текста
+{% endblock title %}
+{% block content %}
+    <div>
+        {% for item in texts %}
+            <p>
+                <a href="/edit_txt/{{ item.href }}">{{ item.title }}</a>
+            </p>
+        {% endfor %}
+    </div>
+{% endblock content %}

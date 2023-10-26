@@ -1,21 +1,15 @@
 import json
 
-import redis
 import aioredis
 
 from create_app import config, logger
 
 
-class RedisConnector:
-
+class ModelRedisConnector:
     redis = aioredis.Redis(host=config.redis.host, port=config.redis.port, db=config.redis.database)
     user_lang_db = "user_lang"
     texts_db = "texts"
-
-    # def __init__(self):
-    #     # self.r = redis.Redis(host=config.redis.host, port=config.redis.port, db=config.redis.database)
-    #     self.user_lang_db = "user_lang"
-    #     self.texts_db = "texts"
+    telegram_auth_db = "telegram_auth"
 
     @classmethod
     async def redis_start(cls):
@@ -23,6 +17,9 @@ class RedisConnector:
             response = await cls.redis.get(db)
             if not response:
                 await cls.redis.set(db, json.dumps(dict()))
+        response = await cls.redis.get(cls.telegram_auth_db)
+        if not response:
+            await cls.redis.set(cls.telegram_auth_db, "")
         logger.info('Redis connected OKK')
 
     @classmethod
@@ -36,6 +33,15 @@ class RedisConnector:
         return response.get(str(user_id), "en")
 
     @classmethod
+    async def get_text_by_lang(cls, lang: str, module: str, handler: str, obj: str = "text") -> str:
+        texts_data = json.loads(await cls.redis.get(cls.texts_db))
+        no_text = "ТЕКСТ НЕ ЗАДАН"
+        try:
+            return texts_data[lang][module][handler][obj]
+        except KeyError:
+            return no_text
+
+    @classmethod
     async def update_user_lang(cls, user_id: str | int, lang: str):
         data = await cls.get_user_lang(all_dict=True)
         data[str(user_id)] = lang
@@ -44,28 +50,27 @@ class RedisConnector:
     @classmethod
     async def get_user_text(cls, user_id: str | int, module: str, handler: str, obj: str = "text") -> str:
         user_lang = await cls.get_user_lang(user_id=user_id)
-        texts_data = json.loads(await cls.redis.get(cls.texts_db))
-        no_text = "ТЕКСТ НЕ ЗАДАН"
-        try:
-            if obj == "text":
-                return texts_data[user_lang][module][handler][obj]
-            else:
-                return texts_data[user_lang][module][handler]["buttons"][obj]
-        except KeyError:
-            return no_text
+        return await cls.get_text_by_lang(lang=user_lang, module=module, handler=handler, obj=obj)
 
     @classmethod
-    async def update_text(cls, lang: str, module: str, handler: str, text_data: dict):
+    async def update_text(cls, lang: str, module: str, handler: str, obj: str, text: str):
         data = await cls.redis.get(cls.texts_db)
         data = json.loads(data)
-        data[lang][module][handler] = text_data
-        await cls.redis.set(cls.user_lang_db, json.dumps(data))
+        if lang not in data:
+            data[lang] = {}
+        if module not in data[lang]:
+            data[lang][module] = {}
+        if handler not in data[lang][module]:
+            data[lang][module][handler] = {}
+        if obj not in data[lang][module][handler]:
+            data[lang][module][handler][obj] = {}
+        data[lang][module][handler][obj] = text
+        await cls.redis.set(cls.texts_db, json.dumps(data))
 
+    @classmethod
+    async def set_tlg_code(cls, code: str):
+        await cls.redis.set(cls.telegram_auth_db, code, ex=3)
 
-def test():
-    red = RedisConnector()
-    red.redis_start()
-
-
-if __name__ == "__main__":
-    test()
+    @classmethod
+    async def get_tlg_code(cls):
+        return await cls.redis.get(cls.telegram_auth_db)

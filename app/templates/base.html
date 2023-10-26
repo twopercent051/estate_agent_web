@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESTATE AGENT :: {% block title %}{% endblock title %}</title>
+    <link rel="icon" href="/static/site_icon.ico">
+</head>
+<body>
+    <header>
+        <div>
+            <h1>Estate Agent CRM</h1>
+        </div>
+        <div>
+            
+        </div>
+        <nav>
+            <a href="/edit_texts">Редактировать текст</a> |
+            <a href="/mailing">Рассылка</a> |
+        </nav>
+    </header>
+    <br>
+
+    {% block content %}{% endblock %}
+    
+</body>
+</html>

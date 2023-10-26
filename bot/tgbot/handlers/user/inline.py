@@ -1,20 +1,21 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from bot.tgbot.models.redis_connector import RedisConnector
+from create_bot import logger
+from tgbot.api_models.redis_connector import RedisConnector as rds
 
 
 class MainInline:
-    _rds = RedisConnector()
 
     def __init__(self, module: str):
         self._module = module
 
     def _create_button(self, user_id: str | int, handler: str, clb_data: str, is_home: bool = False):
         module = "main_block" if is_home else self._module
-        return InlineKeyboardButton(text=self._rds.get_user_text(user_id=user_id,
-                                                                 module=module,
-                                                                 handler=handler,
-                                                                 obj=clb_data), callback_data=clb_data)
+        text = rds.get_user_text(user_id=user_id,
+                                 module=module,
+                                 handler=handler,
+                                 obj=clb_data)
+        return InlineKeyboardButton(text=text, callback_data=clb_data)
 
     def _home_button(self, user_id: str | int):
         return self._create_button(user_id=user_id, handler="all", clb_data="home", is_home=True)
@@ -28,7 +29,17 @@ class MainInline:
             [self._create_button(user_id=user_id, handler=handler, clb_data="select_brochure")],
             [self._create_button(user_id=user_id, handler=handler, clb_data="price_calculation")],
             [self._create_button(user_id=user_id, handler=handler, clb_data="commercial_proposal")],
+            [self._create_button(user_id=user_id, handler=handler, clb_data="settings")],
         ]
+        return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+    def languages_menu_kb(self, user_id: int | str, handler: str):
+        keyboard = []
+        user_lang = rds.get_user_lang(user_id=user_id)
+        for lang in ["en", "ru"]:
+            if lang != user_lang:
+                keyboard.append([self._create_button(user_id=user_id, handler=handler, clb_data=f"language_{lang}")])
+        keyboard.append([self._home_button(user_id=user_id)])
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 
@@ -83,11 +94,11 @@ class CommercialProposalInline(MainInline):
 class CheckChannelInline(MainInline):
 
     def chat_following_kb(self, user_id: int | str, handler: str):
-        subscribe_text = self._rds.get_user_text(user_id=user_id, module=self._module, handler=handler, obj="subscribe")
-        i_signed_up_text = self._rds.get_user_text(user_id=user_id,
-                                                   module=self._module,
-                                                   handler=handler,
-                                                   obj="i_signed_up")
+        subscribe_text = rds.get_user_text(user_id=user_id, module=self._module, handler=handler, obj="subscribe")
+        i_signed_up_text = rds.get_user_text(user_id=user_id,
+                                             module=self._module,
+                                             handler=handler,
+                                             obj="i_signed_up")
         keyboard = [
             [
                 InlineKeyboardButton(text=subscribe_text, url="https://t.me/artashesgri"),

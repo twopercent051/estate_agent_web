@@ -1,13 +1,13 @@
+import logging
 from typing import List
 
-from sqlalchemy import MetaData, Column, Integer, String, select, insert, delete, TEXT, update, DateTime, JSON
+from sqlalchemy import MetaData, Column, Integer, String, select, insert, delete, update, DateTime, and_
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm import sessionmaker, as_declarative
 from sqlalchemy.sql import expression
 
 from create_app import config
-
 
 DATABASE_URL = f'postgresql+asyncpg://{config.db.user}:{config.db.password}@{config.db.host}:5432/{config.db.database}'
 
@@ -52,25 +52,6 @@ class UsersDB(Base):
     telegraph_token = Column(String, nullable=True)
 
 
-# class TextsDB(Base):
-#     __tablename__ = "texts"
-#
-#     id = Column(Integer, nullable=False, autoincrement=True, primary_key=True)
-#     chapter = Column(String, nullable=False)
-#     text = Column(TEXT, nullable=False)
-#
-#
-# class LanguageTextsDB(Base):
-#     __tablename__ = "language_texts"
-#
-#     id = Column(Integer, nullable=False, autoincrement=True, primary_key=True)
-#     lang = Column(String, nullable=False)
-#     module = Column(String, nullable=False)
-#     handler = Column(String, nullable=False)
-#     text = Column(TEXT, nullable=False)
-#     buttons = Column(JSON, nullable=False)
-
-
 class BaseDAO:
     """Класс взаимодействия с БД"""
     model = None
@@ -104,7 +85,7 @@ class BaseDAO:
             await session.commit()
 
 
-class FilesDAO(BaseDAO):
+class ModelsFilesDAO(BaseDAO):
     model = FilesDB
 
     @classmethod
@@ -139,38 +120,7 @@ class FilesDAO(BaseDAO):
         return len(result_files)
 
 
-# class TextsDAO(BaseDAO):
-#     model = TextsDB
-#
-#     @classmethod
-#     async def get_text(cls, chapter: str):
-#         text = await cls.get_one_or_none(chapter=chapter)
-#         if text:
-#             return text["text"]
-#         else:
-#             return "ТЕКСТ НЕ ЗАДАН"
-#
-#     @classmethod
-#     async def update_by_chapter(cls, chapter: str, **data):
-#         async with async_session_maker() as session:
-#             stmt = update(cls.model).values(**data).filter_by(chapter=chapter)
-#             await session.execute(stmt)
-#             await session.commit()
-#
-#
-# class LanguageTextsDAO(BaseDAO):
-#     model = LanguageTextsDB
-#
-#     @classmethod
-#     async def get_text(cls, lang: str, module: str, handler: str) -> dict:
-#         data = await cls.get_one_or_none(lang=lang, module=module, handler=handler)
-#         if data:
-#             return dict(text=data["text"], buttons=data["buttons"], lang=lang)
-#         else:
-#             return dict(text="ТЕКСТ НЕ ЗАДАН", buttons=None, lang=lang)
-
-
-class UsersDAO(BaseDAO):
+class ModelsUsersDAO(BaseDAO):
     model = UsersDB
 
     @classmethod
@@ -183,7 +133,7 @@ class UsersDAO(BaseDAO):
     @classmethod
     async def update_calculation(cls, user_id: str):
         async with async_session_maker() as session:
-            stmt = update(cls.model).values(calculation_count=cls.model.calculation_count + 1).\
+            stmt = update(cls.model).values(calculation_count=cls.model.calculation_count + 1). \
                 filter_by(user_id=user_id)
             await session.execute(stmt)
             await session.commit()
@@ -208,3 +158,14 @@ class UsersDAO(BaseDAO):
             stmt = update(cls.model).values(**data).filter_by(user_id=user_id)
             await session.execute(stmt)
             await session.commit()
+
+    @classmethod
+    async def get_users_for_mailing(cls, data: dict) -> List[dict]:
+        logging.info(data)
+        async with async_session_maker() as session:
+            query = select(cls.model.__table__.columns). \
+                where(and_(data["data"]["brochures_low"] <= UsersDB.request_count, UsersDB.request_count <= data["data"]["brochures_high"],
+                      data["data"]["calc_low"] <= UsersDB.calculation_count, UsersDB.calculation_count <= data["data"]["calc_high"],
+                      data["data"]["telegraph_low"] <= UsersDB.telegraph_count, UsersDB.telegraph_count <= data["data"]["telegraph_high"]))
+            result = await session.execute(query)
+            return result.mappings().all()

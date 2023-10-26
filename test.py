@@ -1,11 +1,1 @@
-data = {
-    "en": {
-        "main_menu": {
-            "message": "Hello world",
-            "buttons": {
-                "first_button": "text1",
-                "second_button": "text2"
-            }
-        }
-    }
-}
+(datetime.datetime.utcnow() + datetime.timedelta(seconds=60)).timestamp() - datetime.datetime.utcnow().timestamp()

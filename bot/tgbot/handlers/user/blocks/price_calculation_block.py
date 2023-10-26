@@ -4,19 +4,18 @@ from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 
-from bot.create_bot import bot, config
-from bot.tgbot.handlers.admin.main_block import excel_file
-from bot.tgbot.misc.states import UserFSM
-from bot.tgbot.models.redis_connector import RedisConnector
-from bot.tgbot.models.sql_connector import UsersDAO
-from bot.tgbot.handlers.user.inline import CalculationPriceInline
+from create_bot import bot, config
+from tgbot.handlers.admin.main_block import excel_file
+from tgbot.misc.states import UserFSM
+from tgbot.api_models.redis_connector import RedisConnector as rds
+from tgbot.api_models.sql_connector import UsersDAO
+from tgbot.handlers.user.inline import CalculationPriceInline
 
 router = Router()
 module = "price_calculation_block"
 inline = CalculationPriceInline(module=module)
 
 admin_group = config.tg_bot.admin_group
-rds = RedisConnector()
 
 
 @router.callback_query(F.data == "price_calculation")
@@ -50,8 +49,7 @@ async def price_calculation_block(message: Message, state: FSMContext):
 @router.callback_query(F.data == "payments_yes")
 async def price_calculation_block(callback: CallbackQuery, state: FSMContext):
     user_id = callback.from_user.id
-    # text = await TextsDAO.get_text(chapter="enter_date")
-    text = rds.get_user_text(user_id=user_id, module=module, handler="not_integer")
+    text = rds.get_user_text(user_id=user_id, module=module, handler="enter_date")
     kb = inline.home_kb(user_id=user_id)
     await state.set_state(UserFSM.payment_date)
     await callback.message.answer(text, reply_markup=kb)

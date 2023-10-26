@@ -5,17 +5,16 @@ from aiogram.types import Message, CallbackQuery
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 
-from bot.create_bot import bot, config
-from bot.tgbot.misc.states import UserFSM
-from bot.tgbot.models.redis_connector import RedisConnector
-from bot.tgbot.models.sql_connector import UsersDAO
-from bot.tgbot.handlers.user.inline import CommercialProposalInline
-from bot.tgbot.services.telegraph_service import TelegraphCreatePage
+from create_bot import bot, config
+from tgbot.misc.states import UserFSM
+from tgbot.api_models.redis_connector import RedisConnector as rds
+from tgbot.api_models.sql_connector import UsersDAO
+from tgbot.handlers.user.inline import CommercialProposalInline
+from tgbot.services.telegraph_service import TelegraphCreatePage
 
 router = Router()
 module = "commercial_proposal_block"
 inline = CommercialProposalInline(module=module)
-rds = RedisConnector()
 
 admin_group = config.tg_bot.admin_group
 
@@ -24,7 +23,7 @@ admin_group = config.tg_bot.admin_group
 async def commercial_proposal_block(callback: CallbackQuery, state: FSMContext):
     user_id = callback.from_user.id
     # text = await TextsDAO.get_text(chapter="proposal_title")
-    text = rds.get_user_text(user_id=user_id, module=module, handler="net_to_seller")
+    text = rds.get_user_text(user_id=user_id, module=module, handler="proposal_title")
     kb = inline.home_kb(user_id=user_id)
     await state.set_state(UserFSM.proposal_title)
     await callback.message.answer(text, reply_markup=kb)
@@ -45,7 +44,7 @@ async def commercial_proposal_block(message: Message, state: FSMContext):
 @router.message(F.photo, UserFSM.album_photo)
 async def commercial_proposal_block(message: Message, state: FSMContext):
     user_id = message.from_user.id
-    handler = "album_photo"
+    handler = "is_more_photo"
     state_data = await state.get_data()
     album_photo: List[str] = state_data["album_photo"]
     album_photo.append(message.photo[-1].file_id)
@@ -78,15 +77,15 @@ async def commercial_proposal_block(message: Message, state: FSMContext):
     await message.answer(text, reply_markup=kb)
 
 
-@router.message(F.text, UserFSM.description)
-async def commercial_proposal_block(message: Message, state: FSMContext):
-    user_id = message.from_user.id
-    # text = await TextsDAO.get_text(chapter="calc_photo")
-    text = rds.get_user_text(user_id=user_id, module=module, handler="calc_photo")
-    kb = inline.home_kb(user_id=user_id)
-    await state.update_data(description=message.text)
-    await state.set_state(UserFSM.calc_photo)
-    await message.answer(text, reply_markup=kb)
+# @router.message(F.text, UserFSM.description)
+# async def commercial_proposal_block(message: Message, state: FSMContext):
+#     user_id = message.from_user.id
+#     # text = await TextsDAO.get_text(chapter="calc_photo")
+#     text = rds.get_user_text(user_id=user_id, module=module, handler="calc_photo")
+#     kb = inline.home_kb(user_id=user_id)
+#     await state.update_data(description=message.text)
+#     await state.set_state(UserFSM.calc_photo)
+#     await message.answer(text, reply_markup=kb)
 
 
 @router.message(F.photo, UserFSM.calc_photo)

@@ -15,7 +15,7 @@ class InlineKeyboard:
         keyboard = [
             [InlineKeyboardButton(text="📦 Загрузка файлов", callback_data="upload_files")],
             [InlineKeyboardButton(text="🔎 Поиск файлов", callback_data="search_files")],
-            [InlineKeyboardButton(text="📝 Редактура текстов", callback_data="edit_texts")],
+            # [InlineKeyboardButton(text="📝 Редактура текстов", callback_data="edit_texts")],
             [InlineKeyboardButton(text="🌅 Редактура альбома", callback_data="edit_images")],
             [InlineKeyboardButton(text="📈 Статистика", callback_data="statistics")],
             [InlineKeyboardButton(text="✉️ Рассылка", callback_data="mailing")],

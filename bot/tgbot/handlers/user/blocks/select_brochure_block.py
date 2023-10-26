@@ -5,16 +5,15 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.markdown import hcode
 
-from bot.create_bot import bot, config
-from bot.tgbot.misc.states import UserFSM
-from bot.tgbot.models.redis_connector import RedisConnector
-from bot.tgbot.models.sql_connector import FilesDAO, UsersDAO
-from bot.tgbot.handlers.user.inline import SelectBrochureInline
+from create_bot import bot, config
+from tgbot.misc.states import UserFSM
+from tgbot.api_models.redis_connector import RedisConnector as rds
+from tgbot.api_models.sql_connector import FilesDAO, UsersDAO
+from tgbot.handlers.user.inline import SelectBrochureInline
 
 router = Router()
 module = "select_brochure_block"
 inline = SelectBrochureInline(module=module)
-rds = RedisConnector()
 
 admin_group = config.tg_bot.admin_group
 
@@ -89,7 +88,6 @@ async def select_brochure_block(message: Message, state: FSMContext):
     if message.content_type == "document":
         document_id = message.document.file_id
         await bot.send_document(chat_id=admin_group, document=document_id, caption=text, reply_markup=kb)
-    # text = await TextsDAO.get_text(chapter="message_sent")
     text = rds.get_user_text(user_id=user_id, module=module, handler="message_sent")
     kb = inline.home_kb(user_id=user_id)
     await state.set_state(UserFSM.home)

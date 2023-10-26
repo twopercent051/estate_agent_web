@@ -11,8 +11,8 @@ from tgbot.handlers.admin.filters import AdminFilter
 from tgbot.handlers.admin.inline import InlineKeyboard
 from tgbot.handlers.user.inline import SelectBrochureInline
 from tgbot.misc.states import AdminFSM
-from tgbot.models.redis_connector import RedisConnector
-from tgbot.models.sql_connector import FilesDAO, UsersDAO
+from tgbot.api_models.redis_connector import RedisConnector as rds
+from tgbot.api_models.sql_connector import FilesDAO, UsersDAO
 from tgbot.services.excel import ExcelFile
 
 
@@ -23,7 +23,6 @@ router.callback_query.filter(AdminFilter())
 admin_group = config.tg_bot.admin_group
 module = "select_brochure_block"
 user_inline = SelectBrochureInline(module=module)
-rds = RedisConnector()
 inline = InlineKeyboard()
 
 excel_file = ExcelFile()

@@ -7,8 +7,8 @@ from aiogram.fsm.context import FSMContext
 
 from create_bot import bot, config
 from tgbot.misc.states import UserFSM
-from tgbot.models.redis_connector import RedisConnector
-from tgbot.models.sql_connector import UsersDAO
+from tgbot.api_models.redis_connector import RedisConnector as rds
+from tgbot.api_models.sql_connector import UsersDAO
 from tgbot.handlers.user.inline import MainInline
 
 router = Router()
@@ -16,7 +16,6 @@ module = "main_block"
 inline = MainInline(module=module)
 
 admin_group = config.tg_bot.admin_group
-rds = RedisConnector()
 
 
 async def start_render(user_id: str | int, username: Optional[str]):
@@ -40,4 +39,22 @@ async def main_block(message: Message, state: FSMContext):
 async def main_block(callback: CallbackQuery, state: FSMContext):
     await start_render(user_id=callback.from_user.id, username=callback.from_user.username)
     await state.set_state(UserFSM.home)
+    await bot.answer_callback_query(callback.id)
+
+
+@router.callback_query(F.data == "settings")
+async def main_block(callback: CallbackQuery):
+    user_id = callback.from_user.id
+    handler = "settings"
+    text = rds.get_user_text(user_id=user_id, module=module, handler=handler)
+    kb = inline.languages_menu_kb(user_id=user_id, handler=handler)
+    await callback.message.answer(text, reply_markup=kb)
+    await bot.answer_callback_query(callback.id)
+
+
+@router.callback_query(F.data.split("_")[0] == "language")
+async def main_block(callback: CallbackQuery):
+    user_id = callback.from_user.id
+    rds.update_user_lang(user_id=user_id, lang=callback.data.split(":")[1])
+    await start_render(user_id=user_id, username=callback.from_user.username)
     await bot.answer_callback_query(callback.id)

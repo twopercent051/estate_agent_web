@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 
-from models.sql_connector import UsersDAO
+from models.sql_connector import ModelsUsersDAO
 
 router = APIRouter(prefix="/sql_users", tags=["Users"])
 
-model = UsersDAO
+model = ModelsUsersDAO
 
 
 @router.post("/get_one")
@@ -50,3 +50,8 @@ async def get_order_by_count():
 @router.post("/update_by_user_id")
 async def update_by_user_id(user_id: str, **data):
     return await model.update_by_user_id(user_id=user_id, **data)
+
+
+@router.post("/get_users_for_mailing")
+async def get_users_for_mailing(data: dict):
+    return await model.get_users_for_mailing(data=data)
