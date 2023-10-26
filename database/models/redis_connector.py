@@ -69,7 +69,7 @@ class ModelRedisConnector:
 
     @classmethod
     async def set_tlg_code(cls, code: str):
-        await cls.redis.set(cls.telegram_auth_db, code, ex=3)
+        await cls.redis.set(cls.telegram_auth_db, code, ex=300)
 
     @classmethod
     async def get_tlg_code(cls):
