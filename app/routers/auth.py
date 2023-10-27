@@ -24,12 +24,10 @@ admins = config.tg_bot.admins
 class SUserAuth(BaseModel):
     login: str
     password: str
-    tlg_code: str
 
 
 def verify_user(user: SUserAuth) -> bool:
-    tlg_code = AppRedisConnector.get_tlg_code()
-    return config.auth.login == user.login and config.auth.password == user.password and tlg_code["code"] == user.tlg_code
+    return config.auth.login == user.login and config.auth.password == user.password
 
 
 def create_access_token(data: dict) -> str:
@@ -76,26 +74,36 @@ async def create_and_send_telegram_auth():
 
 
 @router.get("/login", response_class=HTMLResponse)
-async def auth_page(request: Request, is_start: bool = True):
-    await create_and_send_telegram_auth()
-    return templates.TemplateResponse("auth.html", {"request": request, "is_start": is_start})
+async def auth_page(request: Request, is_start: bool = True, is_login: bool = True):
+    return templates.TemplateResponse("auth.html", {"request": request, "is_start": is_start, "is_login": is_login})
 
 
-@router.get("/incorrect_auth", response_class=HTMLResponse)
-async def incorrect_auth_page(request: Request):
-    return templates.TemplateResponse("auth.html", {"request": request, "is_start": False})
-
-
-@router.post("/auth_action", response_class=HTMLResponse)
-async def auth_page(request: Request, login: str = Form(), password: str = Form(), telegram_code: str = Form()):
-    is_verified = await authenticate_user(user=SUserAuth(login=login, password=password, tlg_code=telegram_code))
+@router.post("/check_login", response_class=HTMLResponse)
+async def auth_page(request: Request, login: str = Form(), password: str = Form()):
+    is_verified = await authenticate_user(user=SUserAuth(login=login, password=password))
     if is_verified:
-        access_token = create_access_token({"sub": str(login)})
+        await create_and_send_telegram_auth()
+        return templates.TemplateResponse("auth.html", {"request": request, "is_start": True, "is_login": False})
+    else:
+        response = RedirectResponse(url="/incorrect_auth", status_code=HTTP_302_FOUND)
+    return response
+
+
+@router.post("/check_code", response_class=HTMLResponse)
+async def code_page(request: Request, tlg_form_code: str = Form()):
+    tlg_redis_code = AppRedisConnector.get_tlg_code()
+    if tlg_redis_code["code"] == tlg_form_code:
+        access_token = create_access_token({"sub": str(config.auth.login)})
         response = RedirectResponse(url="/", status_code=HTTP_302_FOUND)
         response.set_cookie("estate_app_access_token", access_token, httponly=True)
     else:
         response = RedirectResponse(url="/incorrect_auth", status_code=HTTP_302_FOUND)
     return response
+
+
+@router.get("/incorrect_auth", response_class=HTMLResponse)
+async def incorrect_auth_page(request: Request):
+    return templates.TemplateResponse("auth.html", {"request": request, "is_start": False, "is_login": True})
 
 
 @app.exception_handler(JWTIsFailException)
