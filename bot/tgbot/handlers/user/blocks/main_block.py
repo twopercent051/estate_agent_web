@@ -55,6 +55,6 @@ async def main_block(callback: CallbackQuery):
 @router.callback_query(F.data.split("_")[0] == "language")
 async def main_block(callback: CallbackQuery):
     user_id = callback.from_user.id
-    rds.update_user_lang(user_id=user_id, lang=callback.data.split(":")[1])
+    rds.update_user_lang(user_id=user_id, lang=callback.data.split("_")[1])
     await start_render(user_id=user_id, username=callback.from_user.username)
     await bot.answer_callback_query(callback.id)

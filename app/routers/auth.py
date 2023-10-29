@@ -1,3 +1,4 @@
+import asyncio
 import os
 import random
 import string
@@ -69,8 +70,12 @@ async def create_and_send_telegram_auth():
     text = f"Код для входа в приложение:\n<code>{code}</code>\nДля удобства можно кликнуть по коду, он будет " \
            "скопирован.\nКод действует 5 минут"
     for admin in admins:
-        await send_message(receiver=admin, text=text)
+        st = await send_message(receiver=admin, text=text)
+        print(f"{admin}: {st}")
     AppRedisConnector.set_tlg_code(code=code)
+
+if __name__ == "__main__":
+    asyncio.run(create_and_send_telegram_auth())
 
 
 @router.get("/login", response_class=HTMLResponse)
