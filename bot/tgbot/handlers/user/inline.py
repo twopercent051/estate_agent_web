@@ -18,7 +18,7 @@ class MainInline:
         return InlineKeyboardButton(text=text, callback_data=clb_data)
 
     def _home_button(self, user_id: str | int):
-        return self._create_button(user_id=user_id, handler="all", clb_data="home", is_home=True)
+        return self._create_button(user_id=user_id, handler="main_menu", clb_data="home", is_home=True)
 
     def home_kb(self, user_id: str | int):
         keyboard = [[self._home_button(user_id=user_id)]]
@@ -46,7 +46,10 @@ class MainInline:
 class SelectBrochureInline(MainInline):
 
     def support_kb(self, user_id: str | int, handler: str):
-        keyboard = [[self._create_button(user_id=user_id, handler=handler, clb_data="support")]]
+        keyboard = [
+            [self._create_button(user_id=user_id, handler=handler, clb_data="support")],
+            [self._home_button(user_id=user_id)]
+        ]
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
     @staticmethod
@@ -67,14 +70,14 @@ class CalculationPriceInline(MainInline):
                 self._create_button(user_id=user_id, handler=handler, clb_data="payments_yes"),
                 self._create_button(user_id=user_id, handler=handler, clb_data="payments_no"),
             ],
-            [self._home_button]
+            [self._home_button(user_id=user_id)]
         ]
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
     def break_payments_kb(self, user_id: int | str, handler: str):
         keyboard = [
             [self._create_button(user_id=user_id, handler=handler, clb_data="payments_no")],
-            [self._home_button]
+            [self._home_button(user_id=user_id)]
         ]
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
@@ -85,7 +88,7 @@ class CommercialProposalInline(MainInline):
         keyboard = [
             [
                 self._create_button(user_id=user_id, handler=handler, clb_data="upload_layout"),
-                self._home_button
+                self._home_button(user_id=user_id)
             ]
         ]
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
